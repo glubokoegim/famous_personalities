@@ -21,35 +21,6 @@
     { label: 'Обложка', num: '', idx: 15 },
   ];
 
-  /* if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then((registration) => {
-          console.log('SW registered:', registration);
-  
-          // Если уже есть ждущий SW — сразу активируем
-          if (registration.waiting) {
-            registration.waiting.postMessage('SKIP_WAITING');
-          }
-  
-          // Следим за появлением нового SW
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                console.log('[SW] Доступно обновление. Перезагрузите страницу.');
-                // Можно показать тост «Доступно обновление — обновить?»
-              }
-            });
-          });
-        })
-        .catch((error) => console.log('SW registration failed:', error));
-    });
-  } */
-
-  /* ══════════════════════════════════════════════
-     ФУНКЦИЯ ГЕНЕРАЦИИ СТРАНИЦ ИЗ JSON ДАННЫХ
-     ══════════════════════════════════════════════ */
   function renderAuthorsPages(authorsData) {
     const anchor = document.getElementById('dynamic-authors-anchor');
     if (!anchor) return;
@@ -58,7 +29,6 @@
       const leftPageNum = (index * 2) + 3;
       const rightPageNum = (index * 2) + 4;
 
-      // Сборка субтитров для главного видео
       let mainSubsHTML = '';
       let mainCcMenuHTML = '<button class="vid-cc-opt" data-lang="off">Выкл</button>';
       if (author.mainVideo.subs && author.mainVideo.subs.length > 0) {
@@ -68,7 +38,6 @@
         });
       }
 
-      // ЛЕВАЯ СТРАНИЦА (Главное видео)
       const leftPage = document.createElement('div');
       leftPage.className = 'page';
       leftPage.innerHTML = `
@@ -106,7 +75,6 @@
         </div>
       `;
 
-      // ПРАВАЯ СТРАНИЦА (Текст и медиа)
       const bioHTML = author.bio.map(p => `<p class="scroll-text">${p}</p>`).join('');
       const factsHTML = author.facts.map(f => `<li><span class="fd">◆</span>${f}</li>`).join('');
       const linksHTML = author.links && author.links.length ? author.links.map(l => `<a class="scroll-link" href="${l.url}" target="_blank" rel="noopener"><span class="sl-d">◆</span>${l.title}</a>`).join('') : '';
@@ -208,7 +176,6 @@
     });
   }
 
-  /* ── Звук перелистывания ── */
   let soundMuted = localStorage.getItem('flipMuted') === '1';
   const flipAudio = new Audio('page-flip-sound.mp3');
   flipAudio.preload = 'auto';
@@ -221,14 +188,12 @@
     } catch (_) { }
   }
 
-  /* ── Состояние ── */
   let pageFlip = null, lastIdx = 0;
   let soundFiredByCode = false;
 
   function getIdx() { return pageFlip ? pageFlip.getCurrentPageIndex() : lastIdx; }
   function getNavIdx(i) { for (let n = NAV_ITEMS.length - 1; n >= 0; n--) if (i >= NAV_ITEMS[n].idx) return n; return 0; }
 
-  /* ── Тень переплёта ── */
   function updateGutterShadow(idx) {
     const gutter = document.getElementById('book-gutter-shadow');
     if (!gutter) return;
@@ -236,7 +201,6 @@
     gutter.classList.toggle('hidden', isCover);
   }
 
-  /* ── МАСШТАБИРОВАНИЕ КНИГИ ── */
   function scaleBook() {
     const vw = window.innerWidth - 40;
     const vh = window.innerHeight - 40;
@@ -256,7 +220,6 @@
     positioner.style.transform = `translateX(${tx}px)`;
   }
 
-  /* ── ХЭШ-НАВИГАЦИЯ ── */
   function updateHash() {
     if (!pageFlip) return;
     const idx = pageFlip.getCurrentPageIndex();
@@ -308,7 +271,6 @@
       });
   }
 
-  /* ── QR-КОД ── */
   function showQRCode() {
     const idx = getIdx();
     const url = new URL(window.location.href);
@@ -347,30 +309,13 @@
           height: 220,
           type: 'svg',
           data: linkText,
-          image: 'img/ornament-corner.svg', /* <-- Добавлен орнамент в центр */
-          qrOptions: {
-            errorCorrectionLevel: 'H' /* H позволяет перекрывать до 30% кода картинкой */
-          },
-          imageOptions: {
-            crossOrigin: 'anonymous',
-            margin: 8,          /* Отступ от точек QR-кода до орнамента */
-            imageSize: 0.35     /* Размер орнамента относительно QR-кода (35%) */
-          },
-          dotsOptions: {
-            color: '#9B1C1C',
-            type: 'rounded'
-          },
-          backgroundOptions: {
-            color: '#F8F2E6'
-          },
-          cornersSquareOptions: {
-            color: '#6A0E0E',
-            type: 'extra-rounded'
-          },
-          cornersDotOptions: {
-            color: '#9B1C1C',
-            type: 'dot'
-          }
+          image: 'img/ornament-corner.svg',
+          qrOptions: { errorCorrectionLevel: 'H' },
+          imageOptions: { crossOrigin: 'anonymous', margin: 8, imageSize: 0.35 },
+          dotsOptions: { color: '#9B1C1C', type: 'rounded' },
+          backgroundOptions: { color: '#F8F2E6' },
+          cornersSquareOptions: { color: '#6A0E0E', type: 'extra-rounded' },
+          cornersDotOptions: { color: '#9B1C1C', type: 'dot' }
         });
         qrCode.append(qrContainer);
       }
@@ -415,7 +360,6 @@
     setTimeout(() => toast.classList.remove('show'), 2500);
   }
 
-  /* ── ВИДЕОПЛЕЕР ── */
   function fmtTime(s) {
     if (isNaN(s) || s < 0) return '0:00';
     return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
@@ -623,8 +567,14 @@
       resetPlayer(video.closest('.photo-page')?.querySelector('.vid-layer'));
     });
     document.querySelectorAll('.scroll-video .sv-player').forEach(video => {
-      if (!video.paused) { video.pause(); video.currentTime = 0; }
+      if (video.tagName === 'VIDEO' && !video.paused) { 
+        video.pause(); 
+        video.currentTime = 0; 
+      }
       resetPlayer(video.closest('.scroll-video')?.querySelector('.sv-layer'));
+    });
+    document.querySelectorAll('iframe.sv-youtube').forEach(iframe => {
+      iframe.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
     });
   }
 
@@ -838,7 +788,6 @@
     btn.addEventListener('click', showQRCode);
   }
 
-  /* ── ИНИЦИАЛИЗАЦИЯ И FETCH JSON ── */
   document.addEventListener('DOMContentLoaded', () => {
     updateGutterShadow(0);
     scaleBook();
@@ -853,21 +802,16 @@
     bindNavToggle();
     showKeyHint();
 
-    // ЗАГРУЖАЕМ ДАННЫЕ ИЗ DATA.JSON
     fetch('data.json')
       .then(response => {
         if (!response.ok) throw new Error('Сетевая ошибка при загрузке data.json');
         return response.json();
       })
       .then(data => {
-        // 1. ДИНАМИЧЕСКАЯ ГЕНЕРАЦИЯ СТРАНИЦ
         renderAuthorsPages(data);
-
-        // 2. ИНИЦИАЛИЗАЦИЯ ПЛАГИНОВ
         initFancybox();
         initVideoPlayers();
 
-        // 3. ИНИЦИАЛИЗАЦИЯ КНИГИ
         const tryInit = (n) => {
           if (typeof St !== 'undefined' && St.PageFlip) initPageFlip();
           else if (n > 0) setTimeout(() => tryInit(n - 1), 150);
@@ -877,11 +821,10 @@
       })
       .catch(error => {
         console.error('Ошибка загрузки данных:', error);
-        alert('Не удалось загрузить данные книги. Убедитесь, что вы запустили проект через локальный сервер (например, Live Server), а не просто открыли файл в браузере.');
+        alert('Не удалось загрузить данные книги. Убедитесь, что вы запустили проект через локальный сервер.');
       });
   });
 
-  /* ── ПРЕЛОАДЕР ── */
   window.addEventListener('load', () => {
     const preloader = document.getElementById('preloader');
     if (preloader) {
